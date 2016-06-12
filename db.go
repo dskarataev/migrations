@@ -39,10 +39,10 @@ func Version(db DB) (int64, error) {
 	return version, nil
 }
 
-func SetVersion(db DB, version int64) error {
+func SetVersion(db DB, version int64, comment string) error {
 	_, err := db.Exec(`
-		INSERT INTO ? (version, created_at) VALUES (?, now())
-	`, getTableName(db), version)
+		INSERT INTO ? (version, comment, created_at) VALUES (?, ?, now())
+	`, getTableName(db), version, comment)
 	return err
 }
 
@@ -60,6 +60,7 @@ func createTables(db DB) error {
 		CREATE TABLE IF NOT EXISTS ? (
 			id serial,
 			version bigint,
+			comment character varying(255),
 			created_at timestamptz
 		)
 	`, name)

@@ -1,13 +1,9 @@
-package migrations // import "gopkg.in/go-pg/migrations.v4"
+package migrations
 
 import (
-	"errors"
 	"fmt"
-	"path/filepath"
-	"runtime"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -16,6 +12,7 @@ var (
 
 type Migration struct {
 	Version int64
+	Comment string
 	Up      func(DB) error
 	Down    func(DB) error
 }
@@ -24,23 +21,15 @@ func (m *Migration) String() string {
 	return strconv.FormatInt(m.Version, 10)
 }
 
-// Register registers new database migration. Must be called
-// from file with name like "1_initialize_db.go", where:
-// - 1 - migration version;
-// - initialize_db - comment.
-func Register(up, down func(DB) error) error {
-	_, file, _, _ := runtime.Caller(1)
-	version, err := extractVersion(file)
-	if err != nil {
-		return err
-	}
-
+// Register registers new database migration
+// that is already versioned properly
+func Register(version int64, comment string, up, down func(DB) error) {
 	theMigrations = append(theMigrations, Migration{
 		Version: version,
+		Comment: comment,
 		Up:      up,
 		Down:    down,
 	})
-	return nil
 }
 
 // Run runs command on the db. Supported commands are:
@@ -90,7 +79,8 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 				return
 			}
 			newVersion = m.Version
-			err = SetVersion(db, newVersion)
+
+			err = SetVersion(db, newVersion, m.Comment + " UP")
 			if err != nil {
 				return
 			}
@@ -122,7 +112,7 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 		}
 
 		newVersion = m.Version - 1
-		err = SetVersion(db, newVersion)
+		err = SetVersion(db, newVersion, m.Comment + " DOWN")
 		if err != nil {
 			return
 		}
@@ -137,36 +127,12 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 		if err != nil {
 			return
 		}
-		err = SetVersion(db, newVersion)
+		err = SetVersion(db, newVersion, "version is set manually")
 		return
 	default:
 		err = fmt.Errorf("unsupported command: %q", cmd)
 		return
 	}
-}
-
-func extractVersion(name string) (int64, error) {
-	base := filepath.Base(name)
-
-	if ext := filepath.Ext(base); ext != ".go" {
-		return 0, fmt.Errorf("can not extract version from %q", base)
-	}
-
-	idx := strings.IndexByte(base, '_')
-	if idx == -1 {
-		return 0, fmt.Errorf("can not extract version from %q", base)
-	}
-
-	n, err := strconv.ParseInt(base[:idx], 10, 64)
-	if err != nil {
-		return 0, err
-	}
-
-	if n <= 0 {
-		return 0, errors.New("version must be greater than zero")
-	}
-
-	return n, nil
 }
 
 type migrationSorter []Migration

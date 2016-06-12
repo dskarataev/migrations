@@ -6,7 +6,7 @@ import (
 
 	"gopkg.in/pg.v4"
 
-	"gopkg.in/go-pg/migrations.v4"
+	"github.com/dskarataev/migrations"
 )
 
 func connectDB() *pg.DB {
@@ -35,7 +35,7 @@ func TestVersion(t *testing.T) {
 		t.Fatalf("got version %d, wanted 0", version)
 	}
 
-	if err := migrations.SetVersion(db, 999); err != nil {
+	if err := migrations.SetVersion(db, 999, "test version"); err != nil {
 		t.Fatalf("SetVersion failed: %s", err)
 	}
 
