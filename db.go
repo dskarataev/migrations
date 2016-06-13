@@ -7,10 +7,16 @@ import (
 	"gopkg.in/pg.v4/types"
 )
 
-var tableName = "gopg_migrations"
+const defaultTableName = "gopg_migrations"
+
+var tableName = defaultTableName
 
 func SetTableName(name string) {
 	tableName = name
+}
+
+func SetAppTableName(name string) {
+	tableName = defaultTableName + "_" + name
 }
 
 type DB interface {
