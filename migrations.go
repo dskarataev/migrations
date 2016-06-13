@@ -56,6 +56,7 @@ func Run(db DB, a ...string) (oldVersion, newVersion int64, err error) {
 	// Make a copy so there are no side effects of sorting.
 	migrations := make([]Migration, len(theMigrations))
 	copy(migrations, theMigrations)
+	theMigrations = theMigrations[:0]
 	return RunMigrations(db, migrations, a...)
 }
 
