@@ -94,7 +94,7 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 			}
 			err = m.Up(db)
 			if err != nil {
-				fmt.Errorf("cannot migrate UP: %s", m.Comment)
+				fmt.Printf("cannot migrate UP: %s", m.Comment)
 				return
 			}
 			newVersion = m.Version
@@ -126,7 +126,7 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 		if m.Down != nil {
 			err = m.Down(db)
 			if err != nil {
-				fmt.Errorf("cannot migrate DOWN: %s", m.Comment)
+				fmt.Printf("cannot migrate DOWN: %s", m.Comment)
 				return
 			}
 		}
