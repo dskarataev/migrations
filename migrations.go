@@ -33,7 +33,10 @@ func Register(version int64, comment string, up, down func(DB) error) {
 }
 
 // MigrateApp runs "init" and "up" commands on the app migration table
-func MigrateApp(db DB, name string) (oldVersion int64, newVersion int64, err error) {
+func MigrateApp(db DB, name string) (appName string, oldVersion, newVersion int64, err error) {
+	// to add info about which app we migrated
+	appName = name
+
 	SetAppTableName(name)
 
 	_, _, err = Run(db, "init")
@@ -91,6 +94,7 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 			}
 			err = m.Up(db)
 			if err != nil {
+				fmt.Errorf("cannot migrate UP: %s", m.Comment)
 				return
 			}
 			newVersion = m.Version
@@ -122,6 +126,7 @@ func RunMigrations(db DB, migrations []Migration, a ...string) (oldVersion, newV
 		if m.Down != nil {
 			err = m.Down(db)
 			if err != nil {
+				fmt.Errorf("cannot migrate DOWN: %s", m.Comment)
 				return
 			}
 		}
