@@ -32,6 +32,20 @@ func Register(version int64, comment string, up, down func(DB) error) {
 	})
 }
 
+// MigrateApp runs "init" and "up" commands on the app migration table
+func MigrateApp(db DB, name string) (oldVersion int64, newVersion int64, err error) {
+	SetAppTableName(name)
+
+	_, _, err = Run(db, "init")
+	if err != nil {
+		return
+	}
+
+	oldVersion , newVersion, err = Run(db, "up")
+
+	return
+}
+
 // Run runs command on the db. Supported commands are:
 // - init - creates gopg_migrations table.
 // - up - runs all available migrations.
