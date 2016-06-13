@@ -45,8 +45,15 @@ func MigrateApp(db DB, name string) (appName string, oldVersion, newVersion int6
 	}
 
 	oldVersion , newVersion, err = Run(db, "up")
+	// to prevent having the same migrations when we migrate another app
+	Clear()
 
 	return
+}
+
+// Clear removed all registered migrations from the list
+func Clear() {
+	theMigrations = theMigrations[:0]
 }
 
 // Run runs command on the db. Supported commands are:
@@ -59,7 +66,6 @@ func Run(db DB, a ...string) (oldVersion, newVersion int64, err error) {
 	// Make a copy so there are no side effects of sorting.
 	migrations := make([]Migration, len(theMigrations))
 	copy(migrations, theMigrations)
-	theMigrations = theMigrations[:0]
 	return RunMigrations(db, migrations, a...)
 }
 
