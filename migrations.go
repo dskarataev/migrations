@@ -57,7 +57,7 @@ func Clear() {
 }
 
 // Run runs command on the db. Supported commands are:
-// - init - creates gopg_migrations table.
+// - init - creates migrations table.
 // - up - runs all available migrations.
 // - down - reverts last migration.
 // - version - prints current db version.
